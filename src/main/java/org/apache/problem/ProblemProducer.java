@@ -12,8 +12,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.UUID;
 
-import static io.vertx.core.impl.Arguments.require;
-
 /**
  * Created by manishk on 9/22/16.
  */
@@ -40,21 +38,14 @@ public class ProblemProducer {
         vertx.setPeriodic(SCHEDULE_EVERY_3_SECONDS, handler -> {
             vertx.runOnContext(aVoid -> {
 
-                // When there are 2 nodes in cluster.
-                if (ignite.cluster().hostNames().size() > 1) {
-
-                    // Oldest node will put the data.
-                    if (ignite.cluster().forOldest().node().isLocal()) {
-                        ignite.getOrCreateCache("someCache").put("firstName", "Manish");
-                        ignite.getOrCreateCache("someCache").put("lastName", "Kumar");
-                    }
-
-                    // Youngest node will read the data.
-                    if (ignite.cluster().forYoungest().node().isLocal()) {
-                        LOGGER.info("First name from cache {}", ignite.getOrCreateCache("someCache").get("firstName"));
-                        LOGGER.info("First name from cache {}", ignite.getOrCreateCache("someCache").get("lastName"));
-                    }
+                // When there are 2 nodes in cluster then oldest node will put the data.
+                if (ignite.cluster().hostNames().size() > 1 && ignite.cluster().forOldest().node().isLocal()) {
+                    ignite.getOrCreateCache("someCache").put("firstName", "Manish");
+                    ignite.getOrCreateCache("someCache").put("lastName", "Kumar");
                 }
+
+                LOGGER.info("First name from cache {}", ignite.getOrCreateCache("someCache").get("firstName"));
+                LOGGER.info("First name from cache {}", ignite.getOrCreateCache("someCache").get("lastName"));
             });
         });
     }
