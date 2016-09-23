@@ -40,12 +40,21 @@ public class ProblemProducer {
         vertx.setPeriodic(SCHEDULE_EVERY_3_SECONDS, handler -> {
             vertx.runOnContext(aVoid -> {
 
-                // Lets put something is cache, and ensure that we are able to read it.
-                ignite.getOrCreateCache("someCache").put("someNumber", 1);
-                require(ignite.getOrCreateCache("someCache").get("someNumber") != null, "Data not found in cache");
-                LOGGER.info("Able to read cache successfully. This node host {}. Total nodes in cluster {}.",
-                        ignite.cluster().forOldest().node().addresses(),
-                        ignite.cluster().hostNames());
+                // When there are 2 nodes in cluster.
+                if (ignite.cluster().hostNames().size() > 1) {
+
+                    // Oldest node will put the data.
+                    if (ignite.cluster().forOldest().node().isLocal()) {
+                        ignite.getOrCreateCache("someCache").put("firstName", "Manish");
+                        ignite.getOrCreateCache("someCache").put("lastName", "Kumar");
+                    }
+
+                    // Youngest node will read the data.
+                    if (ignite.cluster().forYoungest().node().isLocal()) {
+                        LOGGER.info("First name from cache {}", ignite.getOrCreateCache("someCache").get("firstName"));
+                        LOGGER.info("First name from cache {}", ignite.getOrCreateCache("someCache").get("lastName"));
+                    }
+                }
             });
         });
     }
