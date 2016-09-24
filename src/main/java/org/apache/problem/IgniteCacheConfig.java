@@ -144,7 +144,6 @@ public class IgniteCacheConfig {
                 .setJoinTimeout(joinTimeoutInSeconds * 1000);
         final TcpDiscoveryVmIpFinder ipFinder = new TcpDiscoveryVmIpFinder();
         ipFinder.setAddresses(Arrays.asList(hosts.split(",")));
-        ipFinder.setShared(true);
         return spi.setIpFinder(ipFinder);
     }
 }
